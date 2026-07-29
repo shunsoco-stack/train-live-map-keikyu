@@ -1,0 +1,42 @@
+{
+  "name": "train-live-map-keikyu",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Train Live Map｜京急線版（非公式）",
+  "type": "module",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "overrides": {
+    "postcss": "$postcss",
+    "sharp": "0.35.3"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "test": "node --test src/data/railwayCatalog.test.ts src/lib/browserGuidance.test.ts src/lib/communityPush.test.ts src/lib/communityReports.test.ts src/lib/mapViewport.test.ts src/lib/odpt/api.test.ts src/lib/odpt/config.test.ts src/lib/odpt/direction.test.ts src/lib/odpt/safety.test.ts src/lib/railwayPreferences.test.ts src/lib/serviceStatus.test.ts src/lib/trainMotion.test.ts src/server/requestNetwork.test.ts"
+  },
+  "dependencies": {
+    "@fontsource/m-plus-rounded-1c": "^5.3.0",
+    "lucide-react": "^0.469.0",
+    "maplibre-gl": "^4.7.1",
+    "next": "16.2.12",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.12",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "@types/web-push": "^3.6.4",
+    "autoprefixer": "^10.4.20",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.2.12",
+    "postcss": "8.5.24",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3"
+  }
+}
