@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/firebase/firebase-tools/master/schema/firebase-config.json",
+  "apphosting": [
+    {
+      "backendId": "train-live-map-keikyu",
+      "rootDir": ".",
+      "ignore": [
+        "node_modules",
+        ".git",
+        ".next",
+        ".firebase",
+        ".vercel",
+        ".env*",
+        "coverage",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ]
+    }
+  ]
+}

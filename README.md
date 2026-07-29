@@ -71,10 +71,20 @@ UIは具体的なデータプロバイダを参照せず、`trainLocationService
 | `NEXT_PUBLIC_ADSENSE_CLIENT_ID` | 公開 | `ca-pub-...` 形式のAdSense ID |
 | `NEXT_PUBLIC_ADSENSE_BANNER_SLOT` | 公開・任意 | 手動バナー広告ユニットのslot ID。未設定なら架空値を補わずプレースホルダー表示 |
 
-VercelのProductionとPreviewの両方へ設定します。ただし、次の値を既存JR東日本版と共有してはいけません。
+本番はFirebase App Hostingへ公開します。秘密値はCloud Secret Managerへ保存し、`apphosting.yaml` には秘密値そのものではなくsecret参照だけを記述します。`NEXT_PUBLIC_*` を設定する場合は、Next.jsのビルドへ埋め込めるようBUILDとRUNTIMEの両方で利用可能にします。
+
+最初の本番公開は、`apphosting.yaml` の次の非秘密値だけを使うモック構成です。
+
+- `ODPT_API_BASE_URL=https://api-challenge.odpt.org/api/v4`
+- `ODPT_LIVE_DATA_APPROVED=false`
+
+この状態ではODPTトークン、KV、VAPID、AdSenseの実値を設定せず、対応機能を安全に無効化します。特定利用条件の確認記録と実API疎通が完了するまで、Firebase Consoleから同名変数を`true`へ上書きしてはいけません。
+
+次の値とリソースを既存JR東日本版と共有してはいけません。
 
 - GitHubリポジトリ
-- Vercelプロジェクトとプロジェクトリンク
+- Firebaseプロジェクト、App Hostingバックエンド、Firebase Web App
+- Cloud Secret Managerのsecret
 - KVデータベース／トークン
 - VAPID鍵ペア
 - ODPTトークンの保管先
@@ -142,9 +152,27 @@ npm test
 npm run build
 ```
 
+## Firebase App Hostingへの公開
+
+本アプリはSSR、Route Handler、サーバー側秘密値を使うため、静的なFirebase HostingではなくFirebase App Hostingを使用します。ローカルソースを新規のFirebaseプロジェクトへ直接公開し、既存版のGitHubリポジトリやFirebaseプロジェクトには接続しません。
+
+- Backend ID: `train-live-map-keikyu`
+- Region: `asia-east1`
+- Runtime: バージョン固定のNode.js runtime（ABIU有効）
+- Cloud Run: `minInstances: 0`、`maxInstances: 2`
+- Source deploy: `firebase.json` と `apphosting.yaml`
+
+App HostingにはBlaze従量課金プランが必要です。無料枠を超えた利用は課金され、予算アラートは支出上限ではありません。請求先の接続と予算アラートは、Firebase Consoleで明示的に確認してから行います。
+
+```bash
+firebase deploy --only apphosting:train-live-map-keikyu
+```
+
+Firebase App Hostingが公式にactive supportとして列挙しているNext.jsは現在15.2系までで、本アプリのNext.js 16.2.12はpreview扱いです。App Hostingのビルドで互換性エラーが出た場合だけ、ログを確認して公式active版への変更を判断します。
+
 加えて、320px、375px、393px、430pxで表示を確認し、公開URLをホーム画面へ追加してアイコン、safe-area、Service Worker、`prefers-reduced-motion` を実機確認します。
 
-2026年7月30日のローカル確認では、lint、98件のテスト、本番buildが成功しました。320 / 375 / 393 / 430pxではdocument・地図・canvas幅がviewport幅と一致し、2段ヘッダーも省略されません。路線検索、お気に入り、表示路線の切替、表示路線だけの運行情報、PWA資産のHTTP 200も確認済みです。実Challenge API、公開URL、ホーム画面追加の実機確認は公開作業後に行います。
+2026年7月30日のローカル確認では、lint、103件のテスト、本番buildが成功しました。320 / 375 / 393 / 430pxではdocument・地図・canvas幅がviewport幅と一致し、2段ヘッダーも省略されません。路線検索、お気に入り、表示路線の切替、表示路線だけの運行情報、PWA資産のHTTP 200も確認済みです。実Challenge API、公開URL、ホーム画面追加の実機確認は公開作業後に行います。
 
 ## セキュリティ
 

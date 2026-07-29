@@ -25,6 +25,9 @@ yarn-error.log*
 .env*
 !.env.example
 .vercel/
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
 
 # test output
 coverage/
