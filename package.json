@@ -5,7 +5,7 @@
   "description": "Train Live Map｜京急線版（非公式）",
   "type": "module",
   "engines": {
-    "node": ">=20.9.0"
+    "node": "22.x"
   },
   "overrides": {
     "postcss": "$postcss",

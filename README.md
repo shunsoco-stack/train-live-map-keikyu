@@ -85,26 +85,27 @@ UIは具体的なデータプロバイダを参照せず、`trainLocationService
 | `NEXT_PUBLIC_ADSENSE_CLIENT_ID` | 公開 | `ca-pub-...` 形式のAdSense ID |
 | `NEXT_PUBLIC_ADSENSE_BANNER_SLOT` | 公開・任意 | 手動バナー広告ユニットのslot ID。未設定なら架空値や空の広告枠を表示しない |
 
-本番はFirebase App Hostingへ公開します。秘密値はCloud Secret Managerへ保存し、`apphosting.yaml` には秘密値そのものではなくsecret参照だけを記述します。`NEXT_PUBLIC_*` を設定する場合は、Next.jsのビルドへ埋め込めるようBUILDとRUNTIMEの両方で利用可能にします。
+本番の主経路は、新規Vercelプロジェクト `train-live-map-keikyu` です。既存JR東日本版のVercelプロジェクト `train-live-map` やGitHubリポジトリへ接続しません。環境変数は京急版プロジェクトのProject Settingsだけへ保存し、ProductionとPreviewへ個別に設定します。Team Shared Environment Variablesや既存版の値は再利用しません。`NEXT_PUBLIC_*` はビルド時に公開バンドルへ埋め込まれるため、変更後は新しいdeploymentを作成します。
 
-最初の本番公開は、`apphosting.yaml` の次の非秘密値だけを使うモック構成です。
+最初のProduction／Preview公開は、次の非秘密値だけを使う **mock-only** 構成です。
 
 - `ODPT_API_BASE_URL=https://api-challenge.odpt.org/api/v4`
 - `ODPT_LIVE_DATA_APPROVED=false`
 
-この状態ではODPTトークン、KV、VAPID、AdSenseの実値を設定せず、対応機能を安全に無効化します。特定利用条件の確認記録と実API疎通が完了するまで、Firebase Consoleから同名変数を`true`へ上書きしてはいけません。
+この状態では `ODPT_ACCESS_TOKEN`、KV、VAPID、`NEXT_PUBLIC_ADSENSE_CLIENT_ID`、`NEXT_PUBLIC_ADSENSE_BANNER_SLOT` を設定しません。ODPTライブ取得は開始せず、列車データはモックへフォールバックします。KV依存機能、Push通知、AdSense広告は安全に無効化し、広告用の空き領域も確保しません。PWAのService Worker登録は継続します。特定利用条件の確認記録と実API疎通が完了するまで、`ODPT_LIVE_DATA_APPROVED` を `true` へ変更してはいけません。
 
 次の値とリソースを既存JR東日本版と共有してはいけません。
 
 - GitHubリポジトリ
-- Firebaseプロジェクト、App Hostingバックエンド、Firebase Web App
-- Cloud Secret Managerのsecret
+- Vercelプロジェクト、Git連携、deployment履歴、ドメイン
+- VercelのProject Environment Variables
+- Firebaseを代替経路として使う場合のFirebaseプロジェクト、App Hostingバックエンド、Firebase Web App、Cloud Secret Managerのsecret
 - KVデータベース／トークン
 - VAPID鍵ペア
 - ODPTトークンの保管先
 
 VAPID未設定時はPush通知だけが無効になります。PWAのService Worker登録は継続します。
-AdSenseのクライアントIDだけを設定した場合はサイト共通コードと`ads.txt`だけが有効になります。固定バナーへ実広告を出す場合だけ、AdSense管理画面で作成した実在のslot IDも設定します。
+初回のmock-only公開ではAdSenseを無効のままにします。将来有効化する場合、クライアントIDだけを設定するとサイト共通コードと`ads.txt`だけが有効になります。固定バナーへ実広告を出す場合だけ、AdSense管理画面で作成した実在のslot IDも設定します。
 
 ### 保存領域のnamespace
 
@@ -152,7 +153,7 @@ node scripts/generate-keikyu-icons.mjs
 
 京急の列車ロケーションデータセットは「限定ライセンスおよびその特定利用条件」を読むよう案内しています。一方、2026年7月29日に確認した限定ライセンスページの「特定利用条件」には、京急電鉄向けの条項を確認できませんでした。
 
-これは「京急には追加条件がない」と解釈してはいけません。**Production公開前に、ODPT事務局へ京急データの特定利用条件の所在と適用内容を確認し、その回答を保存してください。** 解消するまで実データ公開を完了扱いにしません。
+これは「京急には追加条件がない」と解釈してはいけません。**ProductionでODPT実データを有効化する前に、ODPT事務局へ京急データの特定利用条件の所在と適用内容を確認し、その回答を保存してください。** 解消するまで実データ公開を完了扱いにしません。
 
 ## 問い合わせ
 
@@ -166,9 +167,21 @@ npm test
 npm run build
 ```
 
-## Firebase App Hostingへの公開
+## Vercelへの公開
 
-本アプリはSSR、Route Handler、サーバー側秘密値を使うため、静的なFirebase HostingではなくFirebase App Hostingを使用します。ローカルソースを新規のFirebaseプロジェクトへ直接公開し、既存版のGitHubリポジトリやFirebaseプロジェクトには接続しません。
+本アプリはNext.jsの標準構成で、VercelではFramework Presetの自動検出と `npm run build` を使用します。`vercel.json` は不要です。新規Vercelプロジェクト `train-live-map-keikyu` を作成し、新規GitHubリポジトリ `shunsoco-stack/train-live-map-keikyu` だけを接続してください。既存の `train-live-map` プロジェクト、Git連携、環境変数、ドメインを流用しません。
+
+- Runtime: Node.js 22.x（`package.json` とGitHub Actionsを統一）
+- Environment Variables: Project SettingsでProductionとPreviewへ個別設定
+- 初回公開: `ODPT_API_BASE_URL` と `ODPT_LIVE_DATA_APPROVED=false` だけ
+- ODPTトークン、KV、VAPID、AdSense: 初回公開では未設定
+- AdSense: `NEXT_PUBLIC_ADSENSE_CLIENT_ID` と `NEXT_PUBLIC_ADSENSE_BANNER_SLOT` を空欄にして無効化
+
+2026年7月30日時点で、Vercel GitHub Appによる自動連携はGitHub側のsudo再認証待ちです。再認証が完了するまで自動deployを有効化せず、回避策として既存JR東日本版のリポジトリやVercelプロジェクトへ接続しないでください。再認証後は新規リポジトリだけをimportし、Project NameとGit Repositoryがどちらも `train-live-map-keikyu` であることを確認してからdeployします。
+
+### Firebase App Hosting（代替経路）
+
+`firebase.json`、`.firebaserc`、`apphosting.yaml` はFirebase App Hostingを使う場合の代替設定として残しています。Vercel公開の主経路では使用せず、Firebaseへのdeployは未完了です。代替経路を採用する場合も既存JR東日本版と分離したFirebaseプロジェクトだけを使い、秘密値はCloud Secret Managerへ保存して `apphosting.yaml` に直書きしません。
 
 - Backend ID: `train-live-map-keikyu`
 - Region: `asia-east1`
@@ -186,7 +199,7 @@ Firebase App Hostingが公式にactive supportとして列挙しているNext.js
 
 加えて、320px、375px、393px、430pxで表示を確認し、公開URLをホーム画面へ追加してアイコン、safe-area、Service Worker、`prefers-reduced-motion` を実機確認します。
 
-2026年7月30日のローカル確認では、lint、103件のテスト、本番buildが成功しました。320 / 375 / 393 / 430pxではdocument・地図・canvas幅がviewport幅と一致し、2段ヘッダーも省略されません。路線検索、お気に入り、表示路線の切替、表示路線だけの運行情報、PWA資産のHTTP 200も確認済みです。実Challenge API、公開URL、ホーム画面追加の実機確認は公開作業後に行います。
+2026年7月30日のローカル確認では、lint、103件のテスト、本番buildが成功しました。320 / 375 / 393 / 430pxではdocument・地図・canvas幅がviewport幅と一致し、2段ヘッダーも省略されません。路線検索、お気に入り、表示路線の切替、表示路線だけの運行情報、PWA資産のHTTP 200も確認済みです。Vercelプロジェクト作成、自動連携、公開URL、ホーム画面追加の実機確認は未完了です。実Challenge API疎通は、特定利用条件を確認した非公開の検証環境で行います。
 
 ## セキュリティ
 
