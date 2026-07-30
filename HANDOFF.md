@@ -58,27 +58,30 @@ VAPIDは以下の4変数が揃い、2つの公開鍵が一致した場合だけ�
 
 ## 外部作業
 
-1. GitHub側でVercel GitHub Appのsudo再認証を完了する。2026年7月30日時点ではこの再認証待ちで、自動連携は未完了。
-2. Vercelへ新規GitHubリポジトリ `shunsoco-stack/train-live-map-keikyu` だけをimportし、新規プロジェクト `train-live-map-keikyu` を作成する。既存の `train-live-map` プロジェクトは変更しない。
-3. Node.js 22.xとNext.jsの自動検出を確認する。Build Commandは `npm run build`、追加の `vercel.json` は不要。
-4. VercelのProductionとPreviewへ、`ODPT_API_BASE_URL=https://api-challenge.odpt.org/api/v4` と `ODPT_LIVE_DATA_APPROVED=false` だけをProject Environment Variablesとして設定する。
-5. `ODPT_ACCESS_TOKEN`、KV、VAPID、`NEXT_PUBLIC_ADSENSE_CLIENT_ID`、`NEXT_PUBLIC_ADSENSE_BANNER_SLOT` が未設定であることを確認する。初回公開はmock-only、Push無効、AdSense無効。
-6. 新しいPreviewとProduction deploymentを作成し、`/api/trains` が `source=mock`、`/dev/debug` と `/api/dev/debug` が404であることを確認する。
-7. 公開URLを320 / 375 / 393 / 430pxとiPhoneホーム画面追加で確認する。
-8. 特定利用条件の回答記録を保存した後、非公開の検証環境でChallenge APIを疎通確認する。実データをProductionへ出すまでは `ODPT_LIVE_DATA_APPROVED=false` を維持する。
-9. KV、VAPID、AdSenseは、それぞれの利用条件・分離・費用を確認した後の別deploymentで段階的に有効化する。
+1. 完了: 新規GitHubリポジトリ `shunsoco-stack/train-live-map-keikyu` へpush。
+2. 完了: 独立したVercelプロジェクト `train-live-map-keikyu` を作成し、Vercel DropからProductionへdeploy。既存の `train-live-map` プロジェクトは無変更。
+3. 完了: Node.js 22.x、Next.js自動検出、Build Command `npm run build` でbuild。
+4. 完了: VercelのProductionとPreviewへ `ODPT_API_BASE_URL=https://api-challenge.odpt.org/api/v4` と `ODPT_LIVE_DATA_APPROVED=false` だけをProject Environment Variablesとして設定。
+5. 完了: `ODPT_ACCESS_TOKEN`、KV、VAPID、`NEXT_PUBLIC_ADSENSE_CLIENT_ID`、`NEXT_PUBLIC_ADSENSE_BANNER_SLOT` は未設定。初回公開はmock-only、Push無効、AdSense無効。
+6. 完了: Productionの `/api/trains` が `source=mock`、`/dev/debug` と `/api/dev/debug` が404であることを確認。
+7. 完了: 公開URLを320 / 375 / 393 / 430pxで確認。iPhone実機のホーム画面追加だけは未確認。
+8. 未完了: Vercelプロジェクトと新規GitHubリポジトリの自動deploy連携。現在はGit Repository未接続。
+9. 未完了: 特定利用条件の回答記録を保存した後、非公開の検証環境でChallenge APIを疎通確認。実データをProductionへ出すまでは `ODPT_LIVE_DATA_APPROVED=false` を維持する。
+10. 未完了: KV、VAPID、AdSenseは、それぞれの利用条件・分離・費用を確認した後の別deploymentで段階的に有効化する。
 
 ### Vercel設定
 
 - Project Name: `train-live-map-keikyu`
-- Git Repository: `shunsoco-stack/train-live-map-keikyu`
+- Production URL: `https://train-live-map-keikyu.vercel.app/`
+- Deploy方式: Vercel Drop（commit `919ab85` の秘密値を含まないZIP）
+- Git Repository: 未接続。ソースは `shunsoco-stack/train-live-map-keikyu` へpush済み
 - Framework Preset: Next.js（自動検出）
 - Runtime: Node.js 22.x
 - Build Command: `npm run build`
 - Environment Variables: 京急版Project SettingsのProductionとPreview。Team Sharedは使わない
 - 初回公開: `ODPT_API_BASE_URL` と `ODPT_LIVE_DATA_APPROVED=false` だけ
 - ODPTトークン、KV、VAPID、AdSense: 未設定
-- GitHub自動連携: GitHub側のsudo再認証待ち。完了後も新規リポジトリだけを接続する
+- GitHub自動連携: 未設定。接続時も新規リポジトリだけを選択する
 
 ### Firebase App Hosting設定（代替経路）
 
@@ -200,7 +203,7 @@ npm run build
 - VAPIDなしでもService Workerが登録される
 - Push通知本文が「利用者投稿」「公式ではない」と明記する
 
-### 2026-07-30 ローカル検証結果
+### 2026-07-30 検証結果
 
 - `package.json` / GitHub Actions: Node.js 22.xへ統一
 - `npm run lint`: 成功
@@ -215,8 +218,12 @@ npm run build
 - manifest、192 / 512 / maskable / Appleアイコン、Service Worker: HTTP 200
 - ブラウザーconsole: error / warningなし
 - 新規GitHubリポジトリへの初回push: 完了
-- Vercel GitHub App自動連携: GitHub側のsudo再認証待ち
-- 実API疎通、Vercelプロジェクト作成／deploy、公開URL実機確認は未完了
+- Vercelプロジェクト作成／Production deploy: 完了
+- 公開URL: `https://train-live-map-keikyu.vercel.app/`
+- 公開URLの320 / 375 / 393 / 430px: 横はみ出しなし、主要ボタン44px以上
+- 公開API: `/api/trains` は `source=mock` で5列車、debug 2経路は404
+- GitHub自動連携: 未設定。GitHub push後の自動deployは行われない
+- 実Challenge API疎通、iPhone実機でのホーム画面追加は未完了
 - Firebase App Hostingは代替経路として設定ファイルだけを保持し、backend作成／deployは未完了
 
 ## 完了判定
@@ -225,13 +232,15 @@ npm run build
 
 - lint / test / build成功
 - 新規GitHubリポジトリへpush
-- GitHub側のsudo再認証後、新規GitHubリポジトリだけを新規Vercelプロジェクトへ接続
+- 独立した新規Vercelプロジェクトを作成
 - VercelのProductionとPreviewへ `ODPT_API_BASE_URL` と `ODPT_LIVE_DATA_APPROVED=false` だけを設定
 - ODPTトークン、KV、VAPID、AdSenseを未設定のまま新規Vercelプロジェクトへdeploy
 - `/api/trains` が `source=mock`、`/dev/debug` と `/api/dev/debug` が404
 - 既存JR東日本版が無変更
-- 公開URLでスマートフォン、PWAアイコン、Push未設定時のSW登録を確認
+- 公開URLで4種類のスマートフォン幅、PWAアイコン、Push未設定時のSW登録を確認
 - 品川〜泉岳寺対象外・Challenge限定・問い合わせ先・クレジットを公開画面に表示
+
+GitHub自動deploy連携とiPhone実機でのホーム画面追加は、mock-only初回公開後の運用作業として残っています。
 
 ### ODPTライブ有効化
 

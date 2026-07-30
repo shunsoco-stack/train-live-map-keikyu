@@ -169,7 +169,7 @@ npm run build
 
 ## Vercelへの公開
 
-本アプリはNext.jsの標準構成で、VercelではFramework Presetの自動検出と `npm run build` を使用します。`vercel.json` は不要です。新規Vercelプロジェクト `train-live-map-keikyu` を作成し、新規GitHubリポジトリ `shunsoco-stack/train-live-map-keikyu` だけを接続してください。既存の `train-live-map` プロジェクト、Git連携、環境変数、ドメインを流用しません。
+本アプリはNext.jsの標準構成で、VercelではFramework Presetの自動検出と `npm run build` を使用します。`vercel.json` は不要です。独立したVercelプロジェクト `train-live-map-keikyu` と新規GitHubリポジトリ `shunsoco-stack/train-live-map-keikyu` を使用し、既存の `train-live-map` プロジェクト、Git連携、環境変数、ドメインを流用しません。
 
 - Runtime: Node.js 22.x（`package.json` とGitHub Actionsを統一）
 - Environment Variables: Project SettingsでProductionとPreviewへ個別設定
@@ -177,7 +177,7 @@ npm run build
 - ODPTトークン、KV、VAPID、AdSense: 初回公開では未設定
 - AdSense: `NEXT_PUBLIC_ADSENSE_CLIENT_ID` と `NEXT_PUBLIC_ADSENSE_BANNER_SLOT` を空欄にして無効化
 
-2026年7月30日時点で、Vercel GitHub Appによる自動連携はGitHub側のsudo再認証待ちです。再認証が完了するまで自動deployを有効化せず、回避策として既存JR東日本版のリポジトリやVercelプロジェクトへ接続しないでください。再認証後は新規リポジトリだけをimportし、Project NameとGit Repositoryがどちらも `train-live-map-keikyu` であることを確認してからdeployします。
+2026年7月30日に、独立したVercelプロジェクト `train-live-map-keikyu` をVercel Dropで作成し、[https://train-live-map-keikyu.vercel.app/](https://train-live-map-keikyu.vercel.app/) へmock-only構成で本番公開しました。GitHub側は `shunsoco-stack/train-live-map-keikyu` へpush済みですが、VercelプロジェクトはGit Repository未接続のため、GitHub pushからの自動deployは未設定です。将来接続する場合も、この新規リポジトリだけを選択し、既存JR東日本版へ接続しないでください。
 
 ### Firebase App Hosting（代替経路）
 
@@ -199,7 +199,7 @@ Firebase App Hostingが公式にactive supportとして列挙しているNext.js
 
 加えて、320px、375px、393px、430pxで表示を確認し、公開URLをホーム画面へ追加してアイコン、safe-area、Service Worker、`prefers-reduced-motion` を実機確認します。
 
-2026年7月30日のローカル確認では、lint、103件のテスト、本番buildが成功しました。320 / 375 / 393 / 430pxではdocument・地図・canvas幅がviewport幅と一致し、2段ヘッダーも省略されません。路線検索、お気に入り、表示路線の切替、表示路線だけの運行情報、PWA資産のHTTP 200も確認済みです。Vercelプロジェクト作成、自動連携、公開URL、ホーム画面追加の実機確認は未完了です。実Challenge API疎通は、特定利用条件を確認した非公開の検証環境で行います。
+2026年7月30日の確認では、lint、103件のテスト、本番buildが成功しました。公開URLの320 / 375 / 393 / 430pxでは横はみ出しがなく、主要ボタンは44px以上で、2段ヘッダーも省略されません。`/api/trains` は `source=mock`、`/dev/debug` と `/api/dev/debug` は404、manifest、192 / 512pxアイコン、Service WorkerはHTTP 200、ブラウザーconsoleはerror / warningなしです。iPhone実機でのホーム画面追加だけは未確認です。実Challenge API疎通は、特定利用条件を確認した非公開の検証環境で行います。
 
 ## セキュリティ
 
