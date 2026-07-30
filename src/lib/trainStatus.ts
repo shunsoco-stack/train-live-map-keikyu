@@ -14,6 +14,8 @@ export interface StatusAppearance {
   color: string;
   /** 縁取り色 */
   ring: string;
+  /** バッジ上の文字色 */
+  foreground: string;
   /** 日本語ラベル */
   label: string;
   /** 記号(色覚に依存しない識別用) */
@@ -21,11 +23,41 @@ export interface StatusAppearance {
 }
 
 const APPEARANCE: Record<StatusLevel, Omit<StatusAppearance, "level">> = {
-  running: { color: "#e60012", ring: "#7f1d1d", label: "走行中", symbol: "▶" },
-  warn: { color: "#eab308", ring: "#713f12", label: "停止(注意)", symbol: "‖" },
-  danger: { color: "#ef4444", ring: "#7f1d1d", label: "停止(長時間)", symbol: "■" },
-  suspended: { color: "#111827", ring: "#ef4444", label: "運転見合わせ", symbol: "✕" },
-  unknown: { color: "#6b7280", ring: "#374151", label: "不明", symbol: "？" },
+  running: {
+    color: "#e6002d",
+    ring: "#7f1d1d",
+    foreground: "#ffffff",
+    label: "走行中",
+    symbol: "▶",
+  },
+  warn: {
+    color: "#facc15",
+    ring: "#854d0e",
+    foreground: "#422006",
+    label: "停止(注意)",
+    symbol: "‖",
+  },
+  danger: {
+    color: "#dc2626",
+    ring: "#7f1d1d",
+    foreground: "#ffffff",
+    label: "停止(長時間)",
+    symbol: "■",
+  },
+  suspended: {
+    color: "#111827",
+    ring: "#dc2626",
+    foreground: "#ffffff",
+    label: "運転見合わせ",
+    symbol: "✕",
+  },
+  unknown: {
+    color: "#6b7280",
+    ring: "#374151",
+    foreground: "#ffffff",
+    label: "不明",
+    symbol: "？",
+  },
 };
 
 /**
@@ -90,10 +122,10 @@ export type TrainFilterKey = "all" | "running" | "stopped" | "delayed" | "suspen
 
 export const TRAIN_FILTERS: { key: TrainFilterKey; label: string }[] = [
   { key: "all", label: "すべて" },
-  { key: "running", label: "走行中" },
-  { key: "stopped", label: "停止中" },
   { key: "delayed", label: "遅延" },
   { key: "suspended", label: "運転見合わせ" },
+  { key: "running", label: "走行中" },
+  { key: "stopped", label: "停止中" },
 ];
 
 /** 状態の日本語表記(詳細パネル用)。 */

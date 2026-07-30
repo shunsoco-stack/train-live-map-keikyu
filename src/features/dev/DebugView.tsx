@@ -110,7 +110,7 @@ export function DebugView() {
         <button
           type="button"
           onClick={() => void load()}
-          className="flex min-h-[40px] items-center gap-1.5 rounded-lg border border-rail-border bg-rail-surface px-3 text-sm hover:border-rail-accent"
+          className="pressable flex min-h-11 items-center gap-1.5 rounded-xl border border-rail-border bg-rail-surface px-3 text-sm font-bold hover:border-rail-accent focus-visible:outline-none"
         >
           <RefreshCw
             className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
@@ -121,7 +121,7 @@ export function DebugView() {
       </div>
 
       {error && (
-        <p className="mb-4 rounded-lg border border-red-500/50 bg-red-500/15 px-3 py-2 text-sm text-red-100">
+        <p className="mb-4 rounded-xl border border-red-500/50 bg-red-50 px-3 py-2 text-sm text-red-900">
           {error}
         </p>
       )}
@@ -172,7 +172,7 @@ export function DebugView() {
                   </span>
                 </div>
                 {probe.error && (
-                  <p className="mt-1 break-all text-xs text-red-300">
+                  <p className="mt-1 break-all text-xs text-red-800">
                     {probe.error}
                   </p>
                 )}
@@ -206,7 +206,7 @@ export function DebugView() {
               </div>
             ))}
             {data.snapshot.missingExpectedLines.length > 0 && (
-              <p className="mt-2 text-sm text-red-300">
+              <p className="mt-2 text-sm text-red-800">
                 未識別: {data.snapshot.missingExpectedLines.join(", ")}
               </p>
             )}
@@ -299,8 +299,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-xl border border-rail-border bg-rail-surface p-4">
-      <h2 className="mb-2 text-sm font-semibold text-rail-accent">{title}</h2>
+    <section className="rounded-2xl border border-rail-border bg-rail-surface p-4 shadow-[0_8px_24px_rgba(72,37,46,0.08)]">
+      <h2 className="mb-2 text-sm font-bold text-rail-accent">{title}</h2>
       <div className="space-y-1">{children}</div>
     </section>
   );
@@ -320,7 +320,7 @@ function Row({
       <span className="shrink-0 text-rail-muted">{label}</span>
       <span
         className={`break-all text-right ${
-          danger ? "text-red-300" : "text-rail-text"
+          danger ? "text-red-800" : "text-rail-text"
         }`}
       >
         {value}

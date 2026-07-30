@@ -9,15 +9,15 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // 京急らしい赤を軸にした、落ち着いたダークテーマ
+        // 明るい地図を主役にし、京急らしい赤を操作と列車へ絞った配色。
         rail: {
-          bg: "#19070a",
-          surface: "#270c12",
-          border: "#5d1b28",
-          accent: "#e60012",
-          "accent-dark": "#8f0010",
-          text: "#fff7f8",
-          muted: "#d9afb6",
+          bg: "#f4f1f2",
+          surface: "#fffafb",
+          border: "#dfd1d5",
+          accent: "#e6002d",
+          "accent-dark": "#b80024",
+          text: "#2a0c13",
+          muted: "#725a61",
         },
         status: {
           running: "#e60012",

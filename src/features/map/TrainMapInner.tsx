@@ -184,14 +184,14 @@ function createRouteLabelImage(name: string, lineColor: string): ImageData {
     height - inset * 2,
     radius,
   );
-  context.fillStyle = "rgba(38, 11, 18, 0.92)";
+  context.fillStyle = "rgba(255, 250, 251, 0.94)";
   context.fill();
   context.lineWidth = 2 * ROUTE_LABEL_PIXEL_RATIO;
   context.strokeStyle = lineColor;
   context.stroke();
 
-  context.fillStyle = "#fff6f8";
-  context.shadowColor = "rgba(0, 0, 0, 0.45)";
+  context.fillStyle = "#2a0c13";
+  context.shadowColor = "rgba(255, 255, 255, 0.75)";
   context.shadowBlur = ROUTE_LABEL_PIXEL_RATIO;
   context.fillText(name, width / 2, height / 2 + ROUTE_LABEL_PIXEL_RATIO / 2);
 
@@ -316,9 +316,9 @@ export default function TrainMapInner({
           source: sourceId,
           layout: { "line-cap": "round", "line-join": "round" },
           paint: {
-            "line-color": "#35101a",
-            "line-width": 7,
-            "line-opacity": 0.85,
+            "line-color": "#fffafb",
+            "line-width": 8,
+            "line-opacity": 0.94,
           },
         });
       }
@@ -343,7 +343,7 @@ export default function TrainMapInner({
           minzoom: 7,
           layout: {
             "symbol-placement": "line",
-            "symbol-spacing": 250,
+            "symbol-spacing": 320,
             "icon-image": labelImageId,
             "icon-size": [
               "interpolate",
@@ -413,7 +413,7 @@ export default function TrainMapInner({
     map.resize();
     map.fitBounds(visibleBounds, {
       padding: compact
-        ? { top: 82, right: 30, bottom: 122, left: 30 }
+        ? { top: 132, right: 30, bottom: 138, left: 30 }
         : { top: 76, right: 72, bottom: 84, left: 72 },
       maxZoom: 10.5,
       duration: reducedMotion ? 0 : 650,
@@ -624,7 +624,7 @@ export default function TrainMapInner({
       ref={containerRef}
       className="absolute inset-0 h-full w-full"
       aria-label="京急線5路線の列車位置地図。ODPTの駅間情報から線路上へ推定した位置を表示"
-      role="application"
+      role="region"
     />
   );
 }
@@ -684,7 +684,7 @@ function createTrainElement(): HTMLDivElement {
   // タップ領域を十分に確保
   el.className = "train-marker cursor-pointer outline-none";
   el.innerHTML = `
-    <div data-pill class="relative flex h-[40px] w-[40px] items-center justify-center transition-transform">
+    <div data-pill class="relative flex h-[44px] w-[44px] items-center justify-center transition-transform">
       <span data-delay
             class="pointer-events-none absolute bottom-[calc(100%-1px)] left-1/2 z-10 hidden -translate-x-1/2 items-center justify-center rounded-full border-2 border-white bg-[#e84462] px-2 py-1 text-[11px] font-black leading-none text-white whitespace-nowrap shadow-[0_2px_5px_rgba(0,0,0,0.38)]">
         <span data-delay-text></span>
@@ -714,11 +714,17 @@ interface TrainStyleArgs {
 }
 
 function styleTrainElement(el: HTMLElement, args: TrainStyleArgs): void {
+  const directionDescription =
+    args.direction === "inbound"
+      ? "上り"
+      : args.direction === "outbound"
+        ? "下り"
+        : "方向不明";
   el.setAttribute(
     "aria-label",
     args.delayMinutes !== null && args.delayMinutes > 0
-      ? `${args.label} ${args.delayMinutes}分遅れ`
-      : args.label,
+      ? `${args.label}、${directionDescription}、${args.delayMinutes}分遅れ`
+      : `${args.label}、${directionDescription}`,
   );
   const pill = el.querySelector<HTMLElement>("[data-pill]");
   const trainBody = el.querySelector<SVGElement>("[data-train-body]");
@@ -757,10 +763,16 @@ function styleTrainElement(el: HTMLElement, args: TrainStyleArgs): void {
     const isInbound = args.direction === "inbound";
     const isOutbound = args.direction === "outbound";
     direction.textContent = isInbound
-      ? "↑ 上り"
+      ? args.selected
+        ? "↑ 上り"
+        : "↑"
       : isOutbound
-        ? "↓ 下り"
-        : "方向不明";
+        ? args.selected
+          ? "↓ 下り"
+          : "↓"
+        : args.selected
+          ? "方向不明"
+          : "・";
     direction.style.backgroundColor = isInbound
       ? "#1e3a8a"
       : isOutbound

@@ -18,6 +18,20 @@
 
 京急電鉄の列車ロケーションデータでは、**品川〜泉岳寺間が対象外**です。この区間には列車を表示せず、モックや推測でも補完しません。
 
+## デザイン
+
+M PLUS Rounded 1cと表情付きの赤い電車を軸に、地図を主役にしたモバイルUIです。
+
+- 背景や操作面は暖色系の白と中立色を使い、京急らしい赤は列車・選択・主要操作へ限定
+- ヘッダーは正式名称と「京急線版（非公式）」の2段を維持し、データ元と更新時刻を短く表示
+- 表示中の路線に関係する運行情報だけを、重大度順で最重要1件から表示
+- 列車フィルター、みんなの情報、路線選択を一つのフローティングドックへ集約
+- 路線選択、投稿、列車詳細、データ利用案内は共通のネイティブ`dialog`を使い、フォーカス移動・復帰を統一
+- すべての主要操作を44px以上にし、`safe-area`、`prefers-reduced-motion`、`prefers-reduced-transparency`、`prefers-contrast`へ対応
+- AdSense未設定時は空の広告枠を表示せず、地図へ領域を返す
+
+画面幅320px、375px、393px、430pxでページ全体の横スクロールが発生しないことを確認しています。列車フィルターだけは、優先度の高い「すべて／遅延／運転見合わせ」から横スクロールできます。
+
 ## 開発
 
 ```bash
@@ -69,7 +83,7 @@ UIは具体的なデータプロバイダを参照せず、`trainLocationService
 | `KV_REST_API_URL` | 秘密扱い | 京急版専用KV REST URL |
 | `KV_REST_API_TOKEN` | 秘密 | 京急版専用KVトークン |
 | `NEXT_PUBLIC_ADSENSE_CLIENT_ID` | 公開 | `ca-pub-...` 形式のAdSense ID |
-| `NEXT_PUBLIC_ADSENSE_BANNER_SLOT` | 公開・任意 | 手動バナー広告ユニットのslot ID。未設定なら架空値を補わずプレースホルダー表示 |
+| `NEXT_PUBLIC_ADSENSE_BANNER_SLOT` | 公開・任意 | 手動バナー広告ユニットのslot ID。未設定なら架空値や空の広告枠を表示しない |
 
 本番はFirebase App Hostingへ公開します。秘密値はCloud Secret Managerへ保存し、`apphosting.yaml` には秘密値そのものではなくsecret参照だけを記述します。`NEXT_PUBLIC_*` を設定する場合は、Next.jsのビルドへ埋め込めるようBUILDとRUNTIMEの両方で利用可能にします。
 

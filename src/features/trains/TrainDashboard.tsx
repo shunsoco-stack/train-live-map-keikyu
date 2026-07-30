@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2, MapPinOff } from "lucide-react";
 import { AdSenseBanner } from "@/components/AdSenseBanner";
 import { AppHeader } from "@/components/AppHeader";
 import { BrowserGuidance } from "@/components/BrowserGuidance";
@@ -56,13 +56,15 @@ export function TrainDashboard() {
 
   const [filter, setFilter] = useState<TrainFilterKey>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [serviceStatusExpanded, setServiceStatusExpanded] = useState(false);
   const [visibleLineIds, setVisibleLineIds] = useState<Set<string>>(
     () => new Set(),
   );
-  const railwaySelectionReady = useRef(false);
+  const [railwaySelectionReady, setRailwaySelectionReady] = useState(false);
+  const railwaySelectionInitializedRef = useRef(false);
 
   useEffect(() => {
-    if (railwayLoading || railwaySelectionReady.current) return;
+    if (railwayLoading || railwaySelectionInitializedRef.current) return;
     const availableIds = new Set(
       railwayOptions
         .filter((option) => option.available)
@@ -90,11 +92,12 @@ export function TrainDashboard() {
     }
 
     setVisibleLineIds(next);
-    railwaySelectionReady.current = true;
+    railwaySelectionInitializedRef.current = true;
+    setRailwaySelectionReady(true);
   }, [railwayLoading, railwayOptions]);
 
   useEffect(() => {
-    if (!railwaySelectionReady.current) return;
+    if (!railwaySelectionInitializedRef.current) return;
     try {
       window.localStorage.setItem(
         VISIBLE_LINES_STORAGE_KEY,
@@ -138,9 +141,24 @@ export function TrainDashboard() {
     () => trains.find((t) => t.id === selectedId) ?? null,
     [trains, selectedId],
   );
+  const statusCards = useMemo(() => {
+    const abnormal = visibleServiceStatuses.filter(
+      (status) => status.severity !== "normal",
+    );
+    return abnormal.length > 0
+      ? abnormal
+      : visibleServiceStatuses.slice(0, 1);
+  }, [visibleServiceStatuses]);
+  const visibleStatusCards = serviceStatusExpanded
+    ? statusCards
+    : statusCards.slice(0, 1);
+  const hiddenStatusCount = Math.max(
+    0,
+    statusCards.length - visibleStatusCards.length,
+  );
 
   return (
-    <div className="flex h-[100dvh] flex-col overflow-hidden bg-rail-bg">
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-[#ebe6e8]">
       <AppHeader
         lastUpdatedAt={lastUpdatedAt}
         dataUpdatedAt={dataUpdatedAt}
@@ -148,7 +166,7 @@ export function TrainDashboard() {
       />
 
       <main className="relative flex-1">
-        {/* 地図(画面の中心) */}
+        {/* 地図を画面の主役として、操作面は上下に一枚ずつだけ重ねる。 */}
         <MapPanel
           trains={filteredTrains}
           railwayLines={railwayLines}
@@ -158,39 +176,85 @@ export function TrainDashboard() {
           now={now}
         />
 
-        <RailwayFilterSheet
-          options={railwayOptions}
-          visibleIds={visibleLineIds}
-          onChange={setVisibleLineIds}
-          loading={railwayLoading}
-        />
-
-        <CommunityReportSheet
-          options={railwayOptions}
-          visibleLineIds={visibleLineIds}
-        />
-
-        {/* 上部オーバーレイ: 運行情報・エラー */}
-        <div className="safe-inline pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-col gap-2 py-3">
-          <div className="flex max-h-[30dvh] flex-col gap-2 overflow-y-auto">
-            {visibleServiceStatuses.map((status) => (
+        {/* 上部: 最重要の運行状況と信頼情報だけを表示する。 */}
+        <div className="safe-inline pointer-events-none absolute inset-x-0 top-0 z-10 flex max-h-[42dvh] flex-col gap-2 py-3">
+          <div className="flex flex-col gap-2 overflow-y-auto">
+            {visibleStatusCards.map((status) => (
               <ServiceStatusBar
                 key={status.lineId}
                 serviceStatus={status}
               />
             ))}
+            {statusCards.length > 1 && (
+              <button
+                type="button"
+                onClick={() =>
+                  setServiceStatusExpanded((current) => !current)
+                }
+                className="app-material pressable pointer-events-auto inline-flex min-h-11 self-start items-center gap-1.5 rounded-full border px-3 text-xs font-bold text-rail-text focus-visible:outline-none"
+                aria-expanded={serviceStatusExpanded}
+              >
+                {serviceStatusExpanded
+                  ? "運行情報を閉じる"
+                  : `ほか${hiddenStatusCount}件の運行情報`}
+                {serviceStatusExpanded ? (
+                  <ChevronUp className="h-4 w-4" aria-hidden />
+                ) : (
+                  <ChevronDown className="h-4 w-4" aria-hidden />
+                )}
+              </button>
+            )}
           </div>
-          <div className="app-material pointer-events-auto self-start rounded-full border border-[#ff6481]/45 px-2.5 py-1 text-[10px] font-bold text-[#ffdbe2] shadow-lg">
-            品川〜泉岳寺はデータ提供対象外・列車非表示
+          <div className="flex flex-wrap gap-2">
+            <div className="app-material pointer-events-auto inline-flex min-h-9 items-center gap-1.5 self-start rounded-full border px-3 text-xs font-bold text-[#6f1830]">
+              <MapPinOff className="h-3.5 w-3.5 text-rail-accent" aria-hidden />
+              <span>品川〜泉岳寺</span>
+              <span className="font-semibold text-rail-muted">対象外・列車非表示</span>
+            </div>
+            {fallback && (
+              <DataSourceNotice notice={notice} fallback={fallback} />
+            )}
           </div>
-          <DataSourceNotice notice={notice} fallback={fallback} />
           {error && <ErrorNotice message={error} onRetry={refresh} />}
         </div>
 
-        {/* 下部オーバーレイ: フィルター */}
-        <div className="safe-bottom safe-inline pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col gap-2 py-3">
-          <TrainFilterBar value={filter} onChange={setFilter} counts={counts} />
+        {/* 下部: 絞り込みと主要操作を一つのコントロールアイランドへ統合。 */}
+        <div className="safe-bottom safe-inline pointer-events-none absolute inset-x-0 bottom-0 z-20 pb-0">
+          <div className="app-material map-control-dock pointer-events-auto mx-auto max-w-lg">
+            <TrainFilterBar value={filter} onChange={setFilter} counts={counts} />
+            <div className="map-control-divider mt-2 grid grid-cols-2 gap-2 pt-2">
+              <CommunityReportSheet
+                options={railwayOptions}
+                visibleLineIds={visibleLineIds}
+              />
+              <RailwayFilterSheet
+                options={railwayOptions}
+                visibleIds={visibleLineIds}
+                onChange={setVisibleLineIds}
+                loading={railwayLoading}
+              />
+            </div>
+          </div>
         </div>
+
+        {!railwayLoading &&
+          railwaySelectionReady &&
+          visibleLineIds.size === 0 && (
+            <div className="pointer-events-none absolute inset-0 z-[5] grid place-items-center px-6 pb-32 pt-24">
+              <div className="app-material max-w-xs rounded-3xl border p-5 text-center">
+                <MapPinOff
+                  className="mx-auto h-7 w-7 text-rail-accent"
+                  aria-hidden
+                />
+                <p className="mt-2 text-base font-extrabold text-rail-text">
+                  表示する路線がありません
+                </p>
+                <p className="mt-1 text-sm leading-6 text-rail-muted">
+                  下の「路線」から、地図に表示する路線を選んでください。
+                </p>
+              </div>
+            </div>
+          )}
 
         <BrowserGuidance
           hideSafariInstallGuidance={loading || selectedTrain !== null}
@@ -198,9 +262,9 @@ export function TrainDashboard() {
 
         {/* 初回ロード表示 */}
         {loading && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-rail-bg/80">
-            <div className="flex items-center gap-2 text-rail-muted">
-              <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+          <div className="absolute inset-0 z-30 flex items-center justify-center bg-white/75 backdrop-blur-sm">
+            <div className="app-material flex items-center gap-2 rounded-full border px-4 py-3 text-rail-muted">
+              <Loader2 className="h-5 w-5 animate-spin text-rail-accent" aria-hidden />
               <span className="text-sm font-bold">京急線の列車情報を読み込み中…</span>
             </div>
           </div>

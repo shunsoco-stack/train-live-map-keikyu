@@ -81,6 +81,14 @@ export function BrowserGuidance({
       });
     }
 
+    if (nextGuidance === "safari-install" && preview === null) {
+      const timer = window.setTimeout(
+        () => setGuidance(nextGuidance),
+        6000,
+      );
+      return () => window.clearTimeout(timer);
+    }
+
     const frame = window.requestAnimationFrame(() =>
       setGuidance(nextGuidance),
     );
@@ -158,7 +166,7 @@ export function BrowserGuidance({
                 aria-hidden
               />
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold tracking-[0.02em] text-[#ff9bae]">
+                <p className="text-xs font-bold tracking-[0.02em] text-rail-accent">
                   Train Live Map｜京急線版
                 </p>
                 <h2
@@ -178,7 +186,7 @@ export function BrowserGuidance({
             </p>
 
             <div
-              className="mt-4 flex items-center gap-2 rounded-2xl border border-[#ff6481]/30 bg-black/20 px-3 py-2.5 text-xs font-bold text-[#ffdbe2]"
+              className="mt-4 flex items-center gap-2 rounded-2xl border border-[#e7a7b4] bg-[#fff0f3] px-3 py-2.5 text-xs font-bold text-[#8d102a]"
               aria-hidden
             >
               <Ellipsis className="h-5 w-5 shrink-0" />
@@ -191,7 +199,7 @@ export function BrowserGuidance({
               ref={continueButtonRef}
               type="button"
               onClick={dismissXGuidance}
-              className="pressable mt-5 min-h-11 w-full rounded-xl bg-rail-accent px-4 text-sm font-extrabold text-white shadow-lg shadow-[#520014]/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff9bae] focus-visible:ring-offset-2 focus-visible:ring-offset-rail-surface"
+              className="pressable mt-5 min-h-11 w-full rounded-xl bg-rail-accent px-4 text-sm font-extrabold text-white shadow-[0_8px_18px_rgba(184,0,36,0.2)] hover:bg-[#b80024] focus-visible:outline-none"
             >
               このまま見る
             </button>
@@ -204,7 +212,7 @@ export function BrowserGuidance({
           <section
             role="region"
             aria-labelledby="safari-install-guidance-title"
-            className="browser-guidance-card app-material pointer-events-auto z-30 rounded-2xl border border-[#ff6481]/40 p-3.5 text-rail-text"
+            className="browser-guidance-card app-material pointer-events-auto z-30 rounded-3xl border p-3.5 text-rail-text"
           >
             <div className="flex items-start gap-3">
               <Image
@@ -229,7 +237,7 @@ export function BrowserGuidance({
               <button
                 type="button"
                 onClick={dismissSafariGuidance}
-                className="pressable -mr-1 -mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-rail-muted hover:bg-white/5 hover:text-rail-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff6481]"
+                className="pressable -mr-1 -mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-rail-muted hover:bg-black/5 hover:text-rail-text focus-visible:outline-none"
                 aria-label="ホーム画面への追加案内を閉じる"
               >
                 <X className="h-5 w-5" aria-hidden />
@@ -237,7 +245,7 @@ export function BrowserGuidance({
             </div>
 
             <ol
-              className="mt-3 flex items-center gap-1 text-[0.6875rem] font-bold text-[#ffdbe2]"
+              className="mt-3 flex items-center gap-1 text-xs font-bold text-[#8d102a]"
               aria-label="共有、ホーム画面に追加、追加の順に操作します"
             >
               <li className="flex min-h-9 min-w-0 flex-1 items-center justify-center gap-1 rounded-lg bg-[#e6002d]/15 px-1.5">
@@ -268,7 +276,7 @@ export function BrowserGuidance({
               <button
                 type="button"
                 onClick={dismissSafariGuidance}
-                className="pressable min-h-11 shrink-0 rounded-xl px-3 text-xs font-bold text-[#ff9bae] hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff6481]"
+                className="pressable min-h-11 shrink-0 rounded-xl px-3 text-xs font-bold text-rail-accent hover:bg-[#fff0f3] focus-visible:outline-none"
               >
                 あとで
               </button>

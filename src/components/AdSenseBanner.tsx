@@ -15,7 +15,7 @@ declare global {
 
 /**
  * 地図を覆わない、画面下部の小さな AdSense ディスプレイ広告枠。
- * slot 未設定時もレイアウトを崩さない安全なプレースホルダーを表示する。
+ * 設定済みのときだけ高さを確保し、未設定環境では地図へ領域を返す。
  */
 export function AdSenseBanner() {
   const adRef = useRef<HTMLModElement | null>(null);
@@ -43,6 +43,8 @@ export function AdSenseBanner() {
     adsenseClientId !== null &&
     adsenseBannerSlotId !== null;
 
+  if (!liveAdEnabled) return null;
+
   return (
     <aside
       aria-label="広告"
@@ -52,27 +54,18 @@ export function AdSenseBanner() {
         <span className="block h-2.5 text-[8px] leading-2.5 text-rail-muted">
           広告
         </span>
-        {liveAdEnabled ? (
-          <ins
-            ref={adRef}
-            className="adsbygoogle block overflow-hidden rounded-md"
-            style={{
-              display: "inline-block",
-              width: "320px",
-              maxWidth: "100%",
-              height: "50px",
-            }}
-            data-ad-client={adsenseClientId}
-            data-ad-slot={adsenseBannerSlotId}
-          />
-        ) : (
-          <div
-            className="flex h-[50px] w-[320px] max-w-full items-center justify-center rounded-md border border-dashed border-rail-border bg-black/10 text-[10px] font-semibold text-rail-muted"
-            aria-label="広告スペース"
-          >
-            広告スペース
-          </div>
-        )}
+        <ins
+          ref={adRef}
+          className="adsbygoogle block overflow-hidden rounded-md"
+          style={{
+            display: "inline-block",
+            width: "320px",
+            maxWidth: "100%",
+            height: "50px",
+          }}
+          data-ad-client={adsenseClientId}
+          data-ad-slot={adsenseBannerSlotId}
+        />
       </div>
     </aside>
   );

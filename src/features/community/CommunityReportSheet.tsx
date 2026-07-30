@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { createPortal } from "react-dom";
+import { useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   Bell,
@@ -16,6 +15,7 @@ import {
   UsersRound,
   X,
 } from "lucide-react";
+import { AccessibleSheet } from "@/components/AccessibleSheet";
 import { useCommunityReports } from "@/features/community/useCommunityReports";
 import { usePushNotifications } from "@/features/community/usePushNotifications";
 import type {
@@ -45,12 +45,12 @@ function summaryLabel(summary: CommunityReportSummary): string {
 
 function summaryTone(summary: CommunityReportSummary): string {
   if (summary.status === "suspended") {
-    return "border-red-400/60 bg-red-400/10 text-red-100";
+    return "border-red-500/50 bg-red-50 text-red-900";
   }
   if (summary.status === "delayed") {
-    return "border-amber-400/60 bg-amber-400/10 text-amber-100";
+    return "border-amber-500/50 bg-amber-50 text-amber-950";
   }
-  return "border-emerald-400/50 bg-emerald-400/10 text-emerald-100";
+  return "border-emerald-500/40 bg-emerald-50 text-emerald-900";
 }
 
 function pushDescription(
@@ -90,6 +90,8 @@ export function CommunityReportSheet({
   const [status, setStatus] =
     useState<CommunityReportStatus>("on-time");
   const [delayMinutes, setDelayMinutes] = useState(5);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const closeRef = useRef<HTMLButtonElement | null>(null);
   const {
     summaries,
     loading,
@@ -118,15 +120,6 @@ export function CommunityReportSheet({
     ? preferredLineId
     : (visibleOptions[0]?.id ?? "");
 
-  useEffect(() => {
-    if (!open) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [open]);
-
   const summary = summaries.find(
     (item) => item.lineId === selectedLineId,
   );
@@ -151,67 +144,62 @@ export function CommunityReportSheet({
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setOpen(true)}
-        className="app-material pressable pointer-events-auto absolute bottom-[4.75rem] left-3 z-20 flex min-h-12 items-center gap-2 rounded-full border border-red-300/70 px-3.5 text-sm font-bold text-rail-text hover:border-red-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+        className="pressable pointer-events-auto flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#e7a7b4] bg-[#fff0f3] px-2 text-sm font-bold text-[#8d102a] hover:bg-[#ffe5ea] focus-visible:outline-none"
         aria-label={`みんなの情報を開く。表示路線に${visibleVoteCount}件の投稿`}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-controls="community-report-dialog"
       >
-        <UsersRound className="h-4 w-4 text-red-300" aria-hidden />
-        <span>みんなの情報</span>
+        <UsersRound className="h-4 w-4 text-rail-accent" aria-hidden />
+        <span className="max-[359px]:hidden">みんなの情報</span>
+        <span className="hidden max-[359px]:inline">みんな</span>
         {visibleVoteCount > 0 && (
-          <span className="min-w-6 rounded-full bg-red-300 px-1.5 py-0.5 text-center text-xs tabular-nums text-red-950">
+          <span className="min-w-6 rounded-full bg-rail-accent px-1.5 py-0.5 text-center text-xs tabular-nums text-white">
             {visibleVoteCount > 99 ? "99+" : visibleVoteCount}
           </span>
         )}
       </button>
 
-      {open &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-50 flex items-end justify-center"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="community-report-title"
-          >
-            <button
-              type="button"
-              aria-label="みんなの情報を閉じる"
-              onClick={() => setOpen(false)}
-              className="animate-scrim-enter absolute inset-0 bg-black/60 backdrop-blur-[2px]"
-            />
-
-            <section className="app-sheet animate-sheet-enter safe-bottom relative flex max-h-[88dvh] w-full max-w-lg flex-col rounded-t-3xl border">
-              <div className="flex justify-center pt-2.5">
-                <span
-                  className="h-1.5 w-10 rounded-full bg-red-100/25"
-                  aria-hidden
-                />
-              </div>
-
-              <div className="flex items-start justify-between gap-3 px-4 pb-3 pt-2">
+      <AccessibleSheet
+        id="community-report-dialog"
+        open={open}
+        onOpenChange={setOpen}
+        labelledBy="community-report-title"
+        describedBy="community-report-description"
+        returnFocusRef={triggerRef}
+        initialFocusRef={closeRef}
+        className="app-dialog"
+        surfaceClassName="app-dialog-card app-sheet safe-bottom relative flex max-h-[90dvh] w-full flex-col rounded-t-3xl border sm:rounded-3xl"
+        bodyClassName="flex min-h-0 flex-col"
+      >
+              <div className="flex items-start justify-between gap-3 px-4 pb-3 pt-5">
                 <div>
-                  <p className="text-xs font-semibold text-red-300">
+                  <p className="text-xs font-bold text-rail-accent">
                     直近{windowMinutes}分・利用者投稿
                   </p>
                   <h2
                     id="community-report-title"
-                    className="mt-0.5 text-lg font-bold tracking-[-0.015em] text-rail-text"
+                    className="mt-0.5 text-xl font-extrabold tracking-[-0.02em] text-rail-text"
                   >
                     みんなの情報
                   </h2>
                 </div>
                 <button
+                  ref={closeRef}
                   type="button"
                   onClick={() => setOpen(false)}
                   aria-label="閉じる"
-                  className="pressable flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-rail-muted hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+                  className="pressable flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-rail-muted hover:bg-black/5 focus-visible:outline-none"
                 >
                   <X className="h-5 w-5" aria-hidden />
                 </button>
               </div>
 
               <div className="overflow-y-auto border-t border-rail-border px-4 pb-6 pt-4">
-                <div className="flex gap-2 rounded-xl border border-amber-400/30 bg-amber-400/10 p-3 text-xs leading-5 text-amber-100">
+                <div id="community-report-description" className="flex gap-2 rounded-2xl border border-amber-400/45 bg-amber-50 p-3 text-xs leading-5 text-amber-950">
                   <AlertTriangle
                     className="mt-0.5 h-4 w-4 shrink-0"
                     aria-hidden
@@ -249,7 +237,7 @@ export function CommunityReportSheet({
                       className={`mt-3 rounded-2xl border p-3 ${
                         summary
                           ? summaryTone(summary)
-                          : "border-rail-border bg-black/15 text-rail-muted"
+                          : "border-rail-border bg-white/70 text-rail-muted"
                       }`}
                       aria-live="polite"
                     >
@@ -281,7 +269,7 @@ export function CommunityReportSheet({
                             : "まだ利用者投稿はありません"}
                       </p>
                       {summary && (
-                        <p className="mt-1 text-[11px] opacity-80">
+                        <p className="mt-1 text-xs opacity-80">
                           平常 {summary.counts.onTime}・遅延{" "}
                           {summary.counts.delayed}・見合わせ{" "}
                           {summary.counts.suspended}
@@ -290,9 +278,14 @@ export function CommunityReportSheet({
                     </div>
 
                     {selectedLine && (
-                      <div className="mt-3 rounded-2xl border border-red-300/35 bg-red-300/[0.07] p-3">
+                      <details className="mt-3 rounded-2xl border border-[#e7a7b4] bg-[#fff7f8] p-3">
+                        <summary className="pressable flex min-h-11 cursor-pointer list-none items-center gap-2 text-sm font-extrabold text-[#8d102a] focus-visible:outline-none">
+                          <Bell className="h-4 w-4" aria-hidden />
+                          みんなの情報・急増通知
+                        </summary>
+                        <div className="mt-2 border-t border-[#ead5da] pt-3">
                         <div className="flex items-start gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-300/15 text-red-200">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#fff0f3] text-rail-accent">
                             {pushSubscribed ? (
                               <BellRing className="h-5 w-5" aria-hidden />
                             ) : push.status === "denied" ? (
@@ -329,8 +322,8 @@ export function CommunityReportSheet({
                                 }
                                 className={`pressable mt-2 min-h-11 w-full rounded-xl border px-3 text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 disabled:opacity-50 ${
                                   pushSubscribed
-                                    ? "border-red-300 bg-red-300/15 text-red-100"
-                                    : "border-rail-border bg-black/15 text-rail-text"
+                                    ? "border-[#e7a7b4] bg-[#fff0f3] text-[#8d102a]"
+                                    : "border-rail-border bg-white text-rail-text"
                                 }`}
                               >
                                 {push.busy
@@ -344,22 +337,23 @@ export function CommunityReportSheet({
                             {push.error && (
                               <p
                                 role="alert"
-                                className="mt-2 text-xs leading-5 text-red-200"
+                                className="mt-2 text-xs leading-5 text-red-800"
                               >
                                 {push.error}
                               </p>
                             )}
                           </div>
                         </div>
-                        <p className="mt-2 text-[11px] leading-4 text-rail-muted">
+                        <p className="mt-2 text-xs leading-5 text-rail-muted">
                           通知は利用者投稿から推定した可能性情報です。
                           京急電鉄の公式発表ではありません。
                         </p>
-                      </div>
+                        </div>
+                      </details>
                     )}
 
                     {!votingEnabled && (
-                      <div className="mt-3 rounded-xl border border-orange-400/40 bg-orange-400/10 p-3 text-xs leading-5 text-orange-100">
+                      <div className="mt-3 rounded-xl border border-orange-400/50 bg-orange-50 p-3 text-xs leading-5 text-orange-950">
                         京急版専用KVが未設定のため閲覧のみ利用できます。
                         新しい投稿は受け付けていません。
                       </div>
@@ -379,21 +373,21 @@ export function CommunityReportSheet({
                             label: "平常",
                             icon: CheckCircle2,
                             active:
-                              "border-emerald-300 bg-emerald-300/15 text-emerald-100",
+                              "border-emerald-500/50 bg-emerald-50 text-emerald-900",
                           },
                           {
                             value: "delayed" as const,
                             label: "遅延",
                             icon: Clock3,
                             active:
-                              "border-amber-300 bg-amber-300/15 text-amber-100",
+                              "border-amber-500/50 bg-amber-50 text-amber-950",
                           },
                           {
                             value: "suspended" as const,
                             label: "見合わせ",
                             icon: OctagonX,
                             active:
-                              "border-red-300 bg-red-300/15 text-red-100",
+                              "border-red-500/50 bg-red-50 text-red-900",
                           },
                         ].map((item) => {
                           const Icon = item.icon;
@@ -407,7 +401,7 @@ export function CommunityReportSheet({
                               className={`pressable flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl border px-1 text-[11px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300 sm:px-2 sm:text-xs ${
                                 selected
                                   ? item.active
-                                  : "border-rail-border bg-black/15 text-rail-muted"
+                                  : "border-rail-border bg-white/70 text-rail-muted"
                               }`}
                             >
                               <Icon className="h-5 w-5" aria-hidden />
@@ -426,17 +420,17 @@ export function CommunityReportSheet({
                         <legend className="text-xs font-bold text-rail-muted">
                           体感で何分ほど遅れていますか？
                         </legend>
-                        <div className="mt-2 grid grid-cols-5 gap-1.5 sm:gap-2">
+                        <div className="scrollbar-none mt-2 flex snap-x gap-2 overflow-x-auto pb-1">
                           {DELAY_OPTIONS.map((minutes) => (
                             <button
                               key={minutes}
                               type="button"
                               aria-pressed={delayMinutes === minutes}
                               onClick={() => setDelayMinutes(minutes)}
-                              className={`pressable min-h-11 min-w-0 rounded-xl border px-0.5 text-[11px] font-bold tabular-nums focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 sm:px-1 sm:text-xs ${
+                              className={`pressable min-h-11 min-w-[3.75rem] shrink-0 snap-start rounded-xl border px-2 text-xs font-bold tabular-nums focus-visible:outline-none ${
                                 delayMinutes === minutes
-                                  ? "border-amber-300 bg-amber-300/15 text-amber-100"
-                                  : "border-rail-border bg-black/15 text-rail-muted"
+                                  ? "border-amber-500/50 bg-amber-50 text-amber-950"
+                                  : "border-rail-border bg-white/70 text-rail-muted"
                               }`}
                             >
                               {minutes}分
@@ -449,7 +443,7 @@ export function CommunityReportSheet({
                     {error && (
                       <p
                         role="alert"
-                        className="mt-3 rounded-xl border border-red-400/40 bg-red-400/10 p-3 text-xs text-red-200"
+                        className="mt-3 rounded-xl border border-red-400/50 bg-red-50 p-3 text-xs text-red-900"
                       >
                         {error}
                       </p>
@@ -457,7 +451,7 @@ export function CommunityReportSheet({
                     {success && (
                       <p
                         role="status"
-                        className="mt-3 rounded-xl border border-emerald-400/40 bg-emerald-400/10 p-3 text-xs text-emerald-100"
+                        className="mt-3 rounded-xl border border-emerald-500/40 bg-emerald-50 p-3 text-xs text-emerald-900"
                       >
                         {success}
                       </p>
@@ -471,7 +465,7 @@ export function CommunityReportSheet({
                         submitting
                       }
                       onClick={() => void submitVote()}
-                      className="pressable mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-red-500 px-4 text-sm font-bold text-white shadow-lg shadow-red-950/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200 disabled:cursor-not-allowed disabled:opacity-45"
+                      className="pressable mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-rail-accent px-4 text-sm font-bold text-white shadow-[0_8px_18px_rgba(184,0,36,0.2)] hover:bg-[#b80024] focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-45"
                     >
                       {submitting ? (
                         <Loader2
@@ -484,7 +478,7 @@ export function CommunityReportSheet({
                       {submitting ? "投稿中…" : "みんなの情報へ投稿"}
                     </button>
 
-                    <p className="mt-2 text-center text-[11px] leading-4 text-rail-muted">
+                    <p className="mt-2 text-center text-xs leading-5 text-rail-muted">
                       同じ路線は{cooldownSeconds}秒後に更新できます。
                       投稿は{windowMinutes}分で集計から外れます。
                       {!persistent && votingEnabled
@@ -494,10 +488,7 @@ export function CommunityReportSheet({
                   </>
                 )}
               </div>
-            </section>
-          </div>,
-          document.body,
-        )}
+      </AccessibleSheet>
     </>
   );
 }

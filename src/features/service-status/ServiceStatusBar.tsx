@@ -11,25 +11,25 @@ const SEVERITY_STYLE: Record<
   { border: string; accent: string; icon: typeof Info }
 > = {
   normal: {
-    border: "border-emerald-500/60",
-    accent: "text-emerald-300",
+    border: "border-emerald-600/30",
+    accent: "text-emerald-800",
     icon: CheckCircle2,
   },
   minor: {
-    border: "border-amber-500/60",
-    accent: "text-amber-300",
+    border: "border-amber-500/45",
+    accent: "text-amber-900",
     icon: AlertTriangle,
   },
   major: {
-    border: "border-red-500/70",
-    accent: "text-red-300",
+    border: "border-red-600/50",
+    accent: "text-red-800",
     icon: AlertTriangle,
   },
 };
 
 /**
  * 路線の運行情報を簡潔に表示するバー。
- * 明るい地図の上でも読めるよう、不透明なダークカード + 重要度色のアクセントで表示する。
+ * 明るい地図の上で、素材面と重要度色を使って一目で読める形にする。
  */
 export function ServiceStatusBar({ serviceStatus }: ServiceStatusBarProps) {
   if (!serviceStatus) return null;
@@ -47,13 +47,13 @@ export function ServiceStatusBar({ serviceStatus }: ServiceStatusBarProps) {
   return (
     <div
       role="status"
-      className={`app-material pointer-events-auto flex max-w-full items-start gap-2 border px-3 py-2 text-xs font-medium text-rail-text ${
-        normal ? "self-start rounded-full" : "w-full rounded-xl"
+      className={`app-material pointer-events-auto flex max-w-full items-start gap-2 border py-2.5 pl-3 pr-14 text-sm font-medium text-rail-text sm:px-3 ${
+        normal ? "self-start rounded-2xl" : "w-full rounded-2xl"
       } ${style.border}`}
     >
-      <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${style.accent}`} aria-hidden />
+      <Icon className={`mt-0.5 h-[1.125rem] w-[1.125rem] shrink-0 ${style.accent}`} aria-hidden />
       <div className="min-w-0 leading-snug">
-        <span className="mb-0.5 inline-flex rounded-full border border-white/15 bg-black/20 px-1.5 py-px text-[9px] font-bold tracking-wide text-rail-muted">
+        <span className="mb-1 inline-flex rounded-full border border-rail-border bg-white/70 px-2 py-0.5 text-[0.6875rem] font-bold tracking-wide text-rail-muted">
           {sourceLabel}
         </span>
         <p>
@@ -65,7 +65,7 @@ export function ServiceStatusBar({ serviceStatus }: ServiceStatusBarProps) {
         </p>
         <time
           dateTime={serviceStatus.updatedAt}
-          className="mt-1 block text-[9px] tabular-nums text-rail-muted"
+          className="mt-1 block text-xs tabular-nums text-rail-muted"
         >
           更新 {formatServiceStatusUpdatedAt(serviceStatus.updatedAt)}
         </time>

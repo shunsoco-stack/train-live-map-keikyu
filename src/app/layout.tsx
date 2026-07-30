@@ -33,7 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
     appleWebApp: {
       capable: true,
       title: "Train Live Map",
-      statusBarStyle: "black-translucent",
+      statusBarStyle: "default",
     },
     formatDetection: {
       telephone: false,
@@ -64,7 +64,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#b5092f",
+  themeColor: "#fffafb",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
