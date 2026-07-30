@@ -37,6 +37,7 @@ import type {
   ServiceStatus,
   TrainLocation,
 } from "@/types/train";
+import { providerNotice } from "@/services/trainLocationServicePolicy";
 
 const log = createLogger("service");
 const MODULE_START_MS = Date.now();
@@ -83,18 +84,12 @@ export interface ServiceStatusesResult {
   notice: string | null;
 }
 
-const LIVE_NOTICE =
-  "ODPTライブ／位置は駅間推定です。品川〜泉岳寺間は列車位置情報の提供対象外です。";
 const MOCK_NOTICE_NO_TOKEN =
   "ODPT未設定のためモックデータを表示しています。品川〜泉岳寺間はモックでも補完しません。";
 const MOCK_NOTICE_LICENSE_ENDED =
   "チャレンジ2026限定ライセンスの利用期間が2027年3月14日（日本時間）で終了したため、モックデータを表示しています。";
 const MOCK_NOTICE_TERMS_PENDING =
   "京急向け特定利用条件の確認記録が未完了のため、ODPTライブを無効化してモックデータを表示しています。";
-const MOCK_NOTICE_FALLBACK =
-  "実データの取得に失敗したためモックデータを表示しています。";
-const MOCK_NOTICE_EMPTY =
-  "ODPTから表示可能な対象列車を取得できなかったためモックデータを表示しています。";
 
 function unavailableOdptNotice(): string {
   const availability = getOdptAvailability();
@@ -135,16 +130,9 @@ async function withProvider<T>(
           : "不明な取得エラー",
     });
   } else if (result.reason === "empty") {
-    log.warn("ODPTの表示可能な対象列車が0件、モックへフォールバック");
+    log.info("ODPTの表示可能な対象列車が0件、空状態として応答");
   }
-  const notice =
-    result.reason === "not-configured"
-      ? unavailableOdptNotice()
-      : result.reason === "request-failed"
-        ? MOCK_NOTICE_FALLBACK
-        : result.reason === "empty"
-          ? MOCK_NOTICE_EMPTY
-          : LIVE_NOTICE;
+  const notice = providerNotice(result.reason, unavailableOdptNotice);
   return {
     value: result.value,
     source: result.source,

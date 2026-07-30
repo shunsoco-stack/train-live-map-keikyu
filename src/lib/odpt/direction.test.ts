@@ -170,14 +170,19 @@ test("実API失敗時はモックへフォールバックする", async () => {
   assert.equal(result.reason, "request-failed");
 });
 
-test("実APIが0列車ならモックへフォールバックする", async () => {
+test("実APIが0列車ならODPTの空配列をそのまま返す", async () => {
+  let mockCalled = false;
   const result = await resolveProviderValue(
     async () => [] as string[],
-    async () => ["mock"],
+    async () => {
+      mockCalled = true;
+      return ["mock"];
+    },
     (trains) => trains.length === 0,
   );
-  assert.deepEqual(result.value, ["mock"]);
-  assert.equal(result.source, "mock");
-  assert.equal(result.fallback, true);
+  assert.deepEqual(result.value, []);
+  assert.equal(result.source, "odpt");
+  assert.equal(result.fallback, false);
   assert.equal(result.reason, "empty");
+  assert.equal(mockCalled, false);
 });

@@ -13,8 +13,8 @@ export interface ProviderResolution<T> {
 }
 
 /**
- * 実プロバイダの失敗または表示可能データ0件を、同じ呼び出し形のモックへ
- * フォールバックする純粋な制御ロジック。
+ * 実プロバイダが未設定または取得に失敗した場合だけ、同じ呼び出し形の
+ * モックへフォールバックする。実APIの成功0件は有効な空状態として保持する。
  */
 export async function resolveProviderValue<T>(
   realCall: (() => Promise<T>) | null,
@@ -35,9 +35,9 @@ export async function resolveProviderValue<T>(
     const value = await realCall();
     if (isEmpty(value)) {
       return {
-        value: await mockCall(),
-        source: "mock",
-        fallback: true,
+        value,
+        source: "odpt",
+        fallback: false,
         reason: "empty",
         error: null,
       };
