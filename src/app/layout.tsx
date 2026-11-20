@@ -1,10 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import Script from "next/script";
 import "@fontsource/m-plus-rounded-1c/400.css";
 import "@fontsource/m-plus-rounded-1c/700.css";
 import "@fontsource/m-plus-rounded-1c/800.css";
-import { adsenseClientId } from "@/lib/adsense";
 import "./globals.css";
 
 const title = "Train Live Map｜京急線版";
@@ -38,9 +36,6 @@ export async function generateMetadata(): Promise<Metadata> {
     formatDetection: {
       telephone: false,
     },
-    other: adsenseClientId
-      ? { "google-adsense-account": adsenseClientId }
-      : undefined,
     openGraph: {
       title,
       description,
@@ -82,15 +77,6 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased">
         {children}
-        {adsenseClientId && (
-          <Script
-            id="google-adsense"
-            async
-            strategy="afterInteractive"
-            crossOrigin="anonymous"
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`}
-          />
-        )}
       </body>
     </html>
   );

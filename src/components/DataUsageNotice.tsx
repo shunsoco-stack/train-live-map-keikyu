@@ -2,6 +2,7 @@
 
 import { Database, Info, Mail, MapPinned, ShieldCheck, UsersRound, X } from "lucide-react";
 import { useRef, useState } from "react";
+import Link from "next/link";
 import { AccessibleSheet } from "@/components/AccessibleSheet";
 import type { ProviderSource } from "@/types/train";
 
@@ -134,6 +135,11 @@ export function DataUsageNotice({ source }: DataUsageNoticeProps) {
             <Mail className="h-4 w-4 shrink-0" aria-hidden />
             {CONTACT_EMAIL}
           </a>
+          <p className="mt-3">
+            <Link href="/privacy" className="text-sm font-bold text-rail-accent underline decoration-[#dc91a0] underline-offset-4">
+              プライバシーポリシー
+            </Link>
+          </p>
         </div>
       </AccessibleSheet>
     </>
